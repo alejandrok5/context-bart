@@ -42,7 +42,39 @@ jobs:
         run: |
           output=$(npm pack --dry-run --json)
           echo "$output"
-          if echo "$output" | grep -E '"path":\s*"(test|\.github|eslint\.config|test/|\.github/)' ; then
+          if echo "$output" | grep -E '"path":\s*"(test|\.github|eslint\.config|packages|test/|\.github/|packages/)' ; then
+            echo "::error::Publish manifest contains files that should not ship." >&2
+            exit 1
+          fi
+
+  pi-package:
+    # packages/pi is a pi extension written in TypeScript; Node 22+ only
+    # (it runs through pi's jiti loader, tests use --experimental-strip-types).
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: packages/pi
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify publish manifest (no test/ or docs/ leak)
+        shell: bash
+        run: |
+          output=$(npm pack --dry-run --json)
+          echo "$output"
+          if echo "$output" | grep -E '"path":\s*"(test|docs|test/|docs/)' ; then
             echo "::error::Publish manifest contains files that should not ship." >&2
             exit 1
           fi

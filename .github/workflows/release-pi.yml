@@ -1,0 +1,60 @@
+name: Release (pi package)
+
+# Publishes packages/pi to npm as `pi-context-bart` when a pi-v* tag is pushed.
+# Requires the same repo secret NPM_TOKEN used by the CLI release workflow.
+
+on:
+  push:
+    tags: ['pi-v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/pi
+    permissions:
+      # id-token: write enables npm publish --provenance, which signs
+      # the package via Sigstore so consumers can verify it really came
+      # from this repo at this commit.
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag="${GITHUB_REF##refs/tags/}"
+          pkg="pi-v$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::Tag $tag does not match packages/pi version $pkg"
+            exit 1
+          fi
+
+      # Lets us safely re-run the workflow (e.g. after a manual publish or a
+      # retried tag push) without tripping E409.
+      - name: Check if version is already published
+        id: already_published
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if npm view "pi-context-bart@${version}" version >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "pi-context-bart@${version} is already on npm — skipping publish."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm with provenance
+        if: steps.already_published.outputs.skip == 'false'
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

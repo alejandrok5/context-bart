@@ -1,0 +1,44 @@
+{
+  "name": "pi-context-bart",
+  "version": "0.1.0",
+  "description": "Smart Zone / Dumb Zone context-window meter for pi — status-bar and widget context meter with zone nags and runtime config",
+  "type": "module",
+  "license": "MIT",
+  "author": "alejandrok5",
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alejandrok5/context-bart.git",
+    "directory": "packages/pi"
+  },
+  "homepage": "https://github.com/alejandrok5/context-bart/tree/main/packages/pi#readme",
+  "bugs": {
+    "url": "https://github.com/alejandrok5/context-bart/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "context-window",
+    "context-rot",
+    "smart-zone",
+    "statusline",
+    "status-line",
+    "llm",
+    "ai-coding",
+    "tui"
+  ],
+  "pi": {
+    "extensions": ["./src/index.ts"],
+    "image": "https://raw.githubusercontent.com/alejandrok5/context-bart/main/packages/pi/docs/pi-demo.png"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "scripts": {
+    "test": "node --test --experimental-strip-types test/meter.test.ts"
+  },
+  "files": ["src/", "README.md", "LICENSE"]
+}
