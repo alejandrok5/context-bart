@@ -70,6 +70,18 @@ For the manual JSON snippets, the env-fallback mode, or troubleshooting, see the
 
 After running the installer, restart your host so it picks up the new statusline config.
 
+### pi
+
+pi gets its own native extension instead of a statusline shim — it exposes compaction-aware context
+usage to extensions, so there's no transcript to walk:
+
+```bash
+pi install npm:pi-context-bart
+```
+
+See **[packages/pi](packages/pi/README.md)** for the `/bart` runtime commands, widget mode, and
+zone-crossing nags.
+
 ### Updates
 
 `context-bart` does a once-a-day, fire-and-forget check against the npm registry. When a newer version is available, a dim `↑0.2.1` segment is appended to the bar, that's your cue to run `npm update -g context-bart` (or `git pull` if you cloned). The check runs in a detached background process so it never delays a status-bar refresh; results are cached in `${XDG_CACHE_HOME:-~/.cache}/context-bart/latest.json` (or `%LOCALAPPDATA%\context-bart\` on Windows). Opt out entirely with `"updateCheck": false` in your [config file](#configuration).
@@ -164,7 +176,13 @@ Register it in `src/detect.js` (order matters — first detector wins). Add a te
 ```bash
 npm test    # runs node --test on the test/ dir
 npm run smoke   # pipes an empty payload to verify the fallback path
+
+# pi package (Node 22+)
+npm test --prefix packages/pi
 ```
+
+The repo holds two publishable artifacts: the `context-bart` CLI at the root (released on `v*` tags)
+and the `pi-context-bart` pi extension in `packages/pi` (released on `pi-v*` tags).
 
 No dependencies to install. See [CONTRIBUTING.md](CONTRIBUTING.md) for
 the release process.
